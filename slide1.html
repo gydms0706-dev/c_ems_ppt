@@ -4,9 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Competition-EMS</title>
-  <!-- Pretendard (Korean) & Montserrat (English) Fonts -->
+  <!-- SUIT (Korean/English title) & Pretendard (Korean/English body) Fonts -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/sun-us/suit/SUIT.css" />
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700;900&display=swap" rel="stylesheet">
+  <style>
+    @font-face {
+      font-family: 'GmarketSansMedium';
+      src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/GmarketSansMedium.woff') format('woff');
+      font-weight: 500;
+      font-style: normal;
+    }
+  </style>
   <style>
     /* Reset & Base Settings */
     * {
@@ -20,11 +28,11 @@
       height: 100%;
       overflow: hidden;
       background-color: #000000;
-      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
       user-select: none;
     }
 
-    /* 16:9 Presentation Scaler */
+    /* Full Bleed Presentation Container */
     .presentation-container {
       position: relative;
       width: 100%;
@@ -33,21 +41,21 @@
       align-items: center;
       justify-content: center;
       background-color: #000000;
+      overflow: hidden;
     }
 
     .slide {
-      position: absolute;
-      width: 1920px;
-      height: 1080px;
+      position: relative;
+      width: 100%;
+      height: 100%;
       background-color: #000000;
       color: #ffffff;
       overflow: hidden;
-      transform-origin: center center;
       transition: background 2s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
-    /* Active Background style when started */
-    .slide.started {
+    /* Active Background style when full reveal is triggered */
+    .slide.started-full {
       background: radial-gradient(circle at 50% 50%, #06191c 0%, #01060e 100%);
     }
 
@@ -62,11 +70,11 @@
       opacity: 0;
       transition: opacity 3s ease;
     }
-    .slide.started #bg-canvas {
+    .slide.started-full #bg-canvas {
       opacity: 1;
     }
 
-    /* Start Overlay Hint */
+    /* Black Start Cover Overlay */
     .start-overlay {
       position: absolute;
       top: 0;
@@ -74,34 +82,38 @@
       width: 100%;
       height: 100%;
       background-color: #000000;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       z-index: 999;
-      transition: opacity 1.5s cubic-bezier(0.22, 1, 0.36, 1), visibility 1.5s;
+      cursor: pointer;
+    }
+    .slide.started .start-overlay {
+      display: none;
+    }
+
+    /* Spotlight Masking Overlay */
+    .spotlight-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 100;
+      pointer-events: none;
+      background: radial-gradient(
+        circle var(--spot-radius, 0px) at var(--spot-x, 50%) var(--spot-y, 50%),
+        transparent 25%,
+        rgba(0, 0, 0, 0.75) 65%,
+        rgba(0, 0, 0, 0.99) 100%
+      );
+      opacity: 1; /* Always active as initial state */
     }
     
-    .slide.started .start-overlay {
+    /* Fades out after spotlight expansion */
+    .slide.started-full .spotlight-overlay {
       opacity: 0;
-      visibility: hidden;
+      transition: opacity 1.2s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
-    .start-hint {
-      color: #ffffff;
-      font-size: 28px;
-      font-weight: 300;
-      letter-spacing: 0.2em;
-      opacity: 0.7;
-      animation: pulse 2s infinite ease-in-out;
-      font-family: 'Montserrat', sans-serif;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 0.3; transform: scale(0.98); }
-      50% { opacity: 0.8; transform: scale(1.02); }
-    }
-
-    /* Content Layout */
+    /* Responsive Content Layout */
     .slide-content-wrapper {
       position: relative;
       width: 100%;
@@ -110,7 +122,7 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 80px 100px;
+      padding: 6vh 5vw; /* Scales with screen dimensions */
     }
 
     /* Header styling */
@@ -123,15 +135,16 @@
       transform: translateY(-20px);
       transition: opacity 1.5s cubic-bezier(0.22, 1, 0.36, 1), transform 1.5s cubic-bezier(0.22, 1, 0.36, 1);
     }
-    .slide.started .slide-header {
+    .slide.started-full .slide-header {
       opacity: 0.9;
       transform: translateY(0);
-      transition-delay: 0.4s;
+      transition-delay: 0.2s;
     }
 
     .event-tag {
-      font-size: 22px;
-      font-weight: 600;
+      font-family: 'Pretendard', sans-serif;
+      font-size: clamp(13px, 1.1vw, 17px);
+      font-weight: 500;
       letter-spacing: 0.05em;
       color: #e2e8f0;
       display: flex;
@@ -148,9 +161,53 @@
       box-shadow: 0 0 10px #00ff66;
     }
 
+    .header-right-group {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+
+    /* Gamified HUD Status Card */
+    .hud-status-card {
+      background: rgba(1, 6, 14, 0.6);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0, 255, 102, 0.25);
+      padding: 6px 16px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Pretendard', sans-serif;
+      font-size: clamp(11px, 0.9vw, 13px);
+      box-shadow: 0 0 15px rgba(0, 255, 102, 0.05);
+    }
+
+    .hud-label {
+      color: #64748b;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .hud-val {
+      color: #ffffff;
+      font-weight: 700;
+      font-family: 'SUIT', sans-serif;
+    }
+
+    .hud-val.neon-green-text {
+      color: #00ff66;
+      text-shadow: 0 0 8px rgba(0, 255, 102, 0.4);
+    }
+
+    .hud-sep {
+      color: rgba(255, 255, 255, 0.15);
+      font-weight: 300;
+    }
+
     .univ-tag {
-      font-size: 22px;
-      font-weight: 500;
+      font-family: 'Pretendard', sans-serif;
+      font-size: clamp(16px, 1.5vw, 22px);
+      font-weight: 400;
       letter-spacing: 0.05em;
       color: #cbd5e1;
     }
@@ -163,26 +220,61 @@
       justify-content: center;
       align-items: center;
       text-align: center;
-      margin-top: -40px; /* Optical center adjustment */
+      margin-top: -2vh; /* Optical center adjustment */
+    }
+
+    /* Gamification badges wrapper */
+    .gamified-badge-wrapper {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: opacity 1.5s cubic-bezier(0.22, 1, 0.36, 1), transform 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .slide.started-full .gamified-badge-wrapper {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: 0.4s;
+    }
+
+    .game-badge {
+      font-family: 'SUIT', sans-serif;
+      font-weight: 600;
+      font-size: clamp(9px, 0.8vw, 11px);
+      letter-spacing: 0.1em;
+      color: #00ff66;
+      border: 1px solid rgba(0, 255, 102, 0.4);
+      background: rgba(0, 255, 102, 0.05);
+      padding: 4px 12px;
+      border-radius: 20px;
+      box-shadow: 0 0 10px rgba(0, 255, 102, 0.1);
+    }
+    
+    .game-badge.mission-badge {
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.03);
     }
 
     .title-container {
       margin-bottom: 24px;
       opacity: 0;
-      transform: scale(0.95) translateY(30px);
-      transition: opacity 2s cubic-bezier(0.22, 1, 0.36, 1), transform 2s cubic-bezier(0.22, 1, 0.36, 1);
+      transform: scale(0.95) translateY(10px);
+      transition: opacity 1s cubic-bezier(0.22, 1, 0.36, 1), transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+      width: 100%;
     }
+    /* Title becomes fully opaque during spotlight search to render inside spotlight */
     .slide.started .title-container {
       opacity: 1;
       transform: scale(1) translateY(0);
-      transition-delay: 1s;
     }
 
     .main-title {
-      font-family: 'Montserrat', sans-serif;
-      font-weight: 900;
-      font-size: 115px;
-      letter-spacing: 0.04em;
+      font-family: 'SUIT', sans-serif;
+      font-weight: 700; /* Bold */
+      font-size: clamp(55px, 7vw, 115px);
+      letter-spacing: 0.02em;
       color: #ffffff;
       line-height: 1.1;
       text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
@@ -211,19 +303,33 @@
       }
     }
 
-    .subtitle-container {
+    /* Subtitle Container */
+    .energy-gauge-container {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 12px;
       opacity: 0;
-      transform: translateY(20px);
+      transform: translateY(10px);
       transition: opacity 1.8s cubic-bezier(0.22, 1, 0.36, 1), transform 1.8s cubic-bezier(0.22, 1, 0.36, 1);
     }
-    .slide.started .subtitle-container {
+    .slide.started-full .energy-gauge-container {
       opacity: 1;
       transform: translateY(0);
-      transition-delay: 2.2s;
+      transition-delay: 0.6s;
+    }
+
+    .univ-tag-hud {
+      font-family: 'Pretendard', sans-serif;
+      font-weight: 500;
+      color: #cbd5e1;
+      letter-spacing: 0.05em;
     }
 
     .sub-title {
-      font-size: 34px;
+      font-family: 'Pretendard', sans-serif;
+      font-size: clamp(15px, 1.6vw, 24px);
       font-weight: 300;
       color: #e2e8f0;
       letter-spacing: 0.05em;
@@ -231,8 +337,9 @@
     }
     
     .sub-title strong {
-      font-weight: 700;
-      color: #ffffff;
+      font-family: 'GmarketSansMedium', sans-serif;
+      font-weight: 500;
+      color: #00ff66;
     }
 
     /* Footer styling */
@@ -245,10 +352,10 @@
       transform: translateY(20px);
       transition: opacity 1.5s cubic-bezier(0.22, 1, 0.36, 1), transform 1.5s cubic-bezier(0.22, 1, 0.36, 1);
     }
-    .slide.started .slide-footer {
+    .slide.started-full .slide-footer {
       opacity: 0.85;
       transform: translateY(0);
-      transition-delay: 3.2s;
+      transition-delay: 1.8s;
     }
 
     .team-info {
@@ -258,16 +365,16 @@
     }
 
     .team-label {
-      font-size: 14px;
+      font-size: clamp(9px, 0.8vw, 11px);
       text-transform: uppercase;
       letter-spacing: 0.15em;
       color: #64748b;
     }
 
     .team-name {
-      font-family: 'Montserrat', sans-serif;
-      font-size: 28px;
-      font-weight: 700;
+      font-family: 'GmarketSansMedium', sans-serif;
+      font-weight: 500;
+      font-size: clamp(15px, 1.6vw, 22px);
       letter-spacing: 0.05em;
       color: #ffffff;
     }
@@ -280,14 +387,15 @@
     }
 
     .members-label {
-      font-size: 14px;
+      font-size: clamp(9px, 0.8vw, 11px);
       text-transform: uppercase;
       letter-spacing: 0.15em;
       color: #64748b;
     }
 
     .member-names {
-      font-size: 24px;
+      font-family: 'Pretendard', sans-serif;
+      font-size: clamp(13px, 1.4vw, 18px);
       font-weight: 400;
       letter-spacing: 0.08em;
       color: #e2e8f0;
@@ -299,31 +407,52 @@
   <div class="presentation-container">
     <div class="slide" id="slide1">
       
-      <!-- Ambient Energy Network Canvas -->
+      <!-- Ambient Energy Network & 3D perspective floor -->
       <canvas id="bg-canvas"></canvas>
 
-      <!-- Start Overlay -->
-      <div class="start-overlay" id="overlay">
-        <div class="start-hint">Press [ SPACE ] to start</div>
-      </div>
+      <!-- Black cover for pure black start -->
+      <div class="start-overlay" id="start-cover"></div>
+
+      <!-- Spotlight overlay layer -->
+      <div class="spotlight-overlay" id="spotlight"></div>
 
       <!-- Main Contents -->
       <div class="slide-content-wrapper">
         <!-- Top Header -->
         <header class="slide-header">
           <div class="event-tag">2026 HUSS AI 경진대회</div>
-          <div class="univ-tag">영남대학교</div>
+          <div class="header-right-group">
+            <div class="hud-status-card">
+              <span class="hud-label">⚡ SAVED</span>
+              <span class="hud-val neon-green-text">14.8%</span>
+              <span class="hud-sep">|</span>
+              <span class="hud-label">🏆 RANK</span>
+              <span class="hud-val">#01</span>
+              <span class="hud-sep">|</span>
+              <span class="univ-tag-hud">영남대학교</span>
+            </div>
+          </div>
         </header>
 
         <!-- Center Titles -->
         <main class="slide-main">
+          <!-- Game level/stage tag -->
+          <div class="gamified-badge-wrapper">
+            <span class="game-badge">STAGE 01 : CAMPUS COOP-PLAY</span>
+            <span class="game-badge mission-badge">MISSION : FIND HIDDEN WATTS</span>
+          </div>
+
           <div class="title-container">
             <h1 class="main-title">
               <span class="neon-green">C</span>ompetition-<span class="neon-green">EMS</span>
             </h1>
           </div>
-          <div class="subtitle-container">
-            <p class="sub-title">숨은 전력을 찾다 : <strong>참여형 경쟁 기반 에너지 관리 시스템</strong></p>
+
+          <!-- Subtitle -->
+          <div class="energy-gauge-container">
+            <div class="subtitle-container-inner">
+              <p class="sub-title">숨은 전력을 찾다 : <strong>참여형 경쟁 기반 에너지 관리 시스템</strong></p>
+            </div>
           </div>
         </main>
 
@@ -345,33 +474,26 @@
 
   <script>
     // -------------------------------------------------------------
-    // 1. 16:9 Aspect Ratio Auto-Scaler
+    // 1. Dynamic Element Position Tracker for Precise Spotlight Focus
     // -------------------------------------------------------------
     const slide = document.getElementById('slide1');
-    const baseWidth = 1920;
-    const baseHeight = 1080;
 
-    function scaleSlide() {
-      const windowWidth = window.innerWidth;
-      const windowHeight = window.innerHeight;
-
-      // Calculate scale factors
-      const scaleX = windowWidth / baseWidth;
-      const scaleY = windowHeight / baseHeight;
+    function getCWordPosition() {
+      // Find the first neon-green highlighted letter ('C')
+      const neonC = document.querySelector('.neon-green');
+      if (!neonC) return { x: 26, y: 46 }; // Safe fallback
       
-      // Use the minimum scale factor to ensure the element fits within the viewport bounds
-      const scale = Math.min(scaleX, scaleY);
-
-      // Apply transformation (center-aligned scale)
-      slide.style.transform = `scale(${scale})`;
+      const rect = neonC.getBoundingClientRect();
+      const parentRect = slide.getBoundingClientRect();
+      
+      // Calculate coordinates relative to the slide container in percentage
+      const px = ((rect.left + rect.width / 2) / parentRect.width) * 100;
+      const py = ((rect.top + rect.height / 2) / parentRect.height) * 100;
+      return { x: px, y: py };
     }
 
-    // Initialize and bind resizing events
-    window.addEventListener('resize', scaleSlide);
-    window.addEventListener('DOMContentLoaded', scaleSlide);
-
     // -------------------------------------------------------------
-    // 2. Spacebar Start Interaction
+    // 2. Interaction & Spotlight Motion Timeline
     // -------------------------------------------------------------
     let isStarted = false;
 
@@ -383,9 +505,9 @@
       }
     });
 
-    // Also support clicking anywhere to start for easier presenter control (e.g. presenter remote)
-    const overlay = document.getElementById('overlay');
-    overlay.addEventListener('click', () => {
+    // Also support clicking on the cover to start
+    const startCover = document.getElementById('start-cover');
+    startCover.addEventListener('click', () => {
       if (!isStarted) {
         startPresentation();
       }
@@ -393,57 +515,117 @@
 
     function startPresentation() {
       isStarted = true;
+      document.getElementById('start-cover').style.display = 'none'; // Hide instantly to prevent visual flashing
       slide.classList.add('started');
       
-      // Start Canvas Energy Wave animation
+      // Kick off spotlight searching timeline
+      startSpotlightAnimation();
+    }
+
+    function startSpotlightAnimation() {
+      const spotlight = document.getElementById('spotlight');
+      let startTime = null;
+
+      // Track target 'C' positions dynamically
+      const cPos = getCWordPosition();
+
+      // Timeline Keyframes: [elapsed_ms, target_x_pct, target_y_pct, target_radius_px]
+      // Flow: Center (50%) -> Left (30%) -> Right (70%) -> Focus 'C' (Dynamic) -> Burst Reveal (2500px)
+      // Y is aligned dynamically to match 'C' vertical height.
+      const keyframes = [
+        { t: 0,    x: 50, y: cPos.y, r: 0 },
+        { t: 200,  x: 50, y: cPos.y, r: 120 },  // Fades in at center
+        { t: 1200, x: 30, y: cPos.y, r: 120 },  // Move Left
+        { t: 2200, x: 70, y: cPos.y, r: 120 },  // Move Right
+        { t: 3200, x: cPos.x, y: cPos.y, r: 120 },  // Focus precisely on letter 'C'
+        { t: 3550, x: cPos.x, y: cPos.y, r: 120 },  // Dramatic pause on 'C'
+        { t: 4350, x: cPos.x, y: cPos.y, r: 2500 }  // Expand from 'C' to reveal full layout
+      ];
+
+      // Easing function for smooth organic transitions
+      function easeInOutCubic(x) {
+        return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+      }
+
+      function update(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const elapsed = timestamp - startTime;
+
+        let startKf = keyframes[0];
+        let endKf = keyframes[keyframes.length - 1];
+
+        // Find current keyframe segment
+        for (let i = 0; i < keyframes.length - 1; i++) {
+          if (elapsed >= keyframes[i].t && elapsed <= keyframes[i + 1].t) {
+            startKf = keyframes[i];
+            endKf = keyframes[i + 1];
+            break;
+          }
+        }
+
+        if (elapsed >= keyframes[keyframes.length - 1].t) {
+          // Animation complete
+          spotlight.style.setProperty('--spot-x', `${endKf.x}%`);
+          spotlight.style.setProperty('--spot-y', `${endKf.y}%`);
+          spotlight.style.setProperty('--spot-radius', `${endKf.r}px`);
+          
+          triggerFullPresentation();
+          return;
+        }
+
+        const segmentDuration = endKf.t - startKf.t;
+        const progress = (elapsed - startKf.t) / segmentDuration;
+        const easedProgress = easeInOutCubic(progress);
+
+        // Interpolate properties
+        const currentX = startKf.x + (endKf.x - startKf.x) * easedProgress;
+        const currentY = startKf.y + (endKf.y - startKf.y) * easedProgress;
+        const currentR = startKf.r + (endKf.r - startKf.r) * easedProgress;
+
+        spotlight.style.setProperty('--spot-x', `${currentX}%`);
+        spotlight.style.setProperty('--spot-y', `${currentY}%`);
+        spotlight.style.setProperty('--spot-radius', `${currentR}px`);
+
+        // Trigger full layout fade-in slightly before expansion finishes for seamless blend
+        if (elapsed >= 3600 && !slide.classList.contains('started-full')) {
+          triggerFullPresentation();
+        }
+
+        requestAnimationFrame(update);
+      }
+
+      requestAnimationFrame(update);
+    }
+
+    function triggerFullPresentation() {
+      if (slide.classList.contains('started-full')) return;
+      slide.classList.add('started-full');
+      
+      // Start Canvas animations
       initCanvasAnimation();
     }
 
     // -------------------------------------------------------------
-    // 3. Canvas Background: Ambient Energy Flow
+    // 3. Canvas Background: 3D perspective grid & Spark particles
     // -------------------------------------------------------------
     function initCanvasAnimation() {
       const canvas = document.getElementById('bg-canvas');
       const ctx = canvas.getContext('2d');
 
-      // Match canvas resolution to original slide coordinates
-      canvas.width = baseWidth;
-      canvas.height = baseHeight;
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
 
-      // Energy wave lines configuration
-      const waves = [
-        {
-          y: baseHeight * 0.65,
-          length: 0.0012,
-          amplitude: 45,
-          frequency: 0.015,
-          color: 'rgba(0, 255, 102, 0.08)',
-          speed: 0.01
-        },
-        {
-          y: baseHeight * 0.7,
-          length: 0.0008,
-          amplitude: 65,
-          frequency: 0.01,
-          color: 'rgba(0, 150, 255, 0.06)',
-          speed: -0.007
-        },
-        {
-          y: baseHeight * 0.58,
-          length: 0.0015,
-          amplitude: 30,
-          frequency: 0.02,
-          color: 'rgba(0, 255, 102, 0.04)',
-          speed: 0.015
-        }
-      ];
-
-      // Spark particles in background simulating electric grids
+      // Spark particles simulating electrical nodes
       const particles = [];
-      for (let i = 0; i < 25; i++) {
+      const numParticles = 25;
+      for (let i = 0; i < numParticles; i++) {
         particles.push({
-          x: Math.random() * baseWidth,
-          y: Math.random() * baseHeight,
+          x: Math.random() * window.innerWidth,
+          y: Math.random() * window.innerHeight,
           size: Math.random() * 2 + 1,
           opacity: Math.random() * 0.5 + 0.1,
           speedY: -(Math.random() * 0.4 + 0.1),
@@ -453,62 +635,117 @@
         });
       }
 
+      // 3D Perspective Grid Configurations
+      const gridCols = 32;       // Number of vertical grid lines
+      const gridRows = 24;       // Number of horizontal grid lines
+      const focalLength = 320;   // Camera lens focal length
+      const maxDepth = 1500;     // Maximum depth (horizon limit)
+      const depthGap = maxDepth / gridRows; // Distance between horizontal rows
+
       let time = 0;
 
       function animate() {
         if (!isStarted) return;
         requestAnimationFrame(animate);
 
-        // Clear with slight trailing effect
-        ctx.fillStyle = 'rgba(1, 6, 14, 0.2)';
-        ctx.fillRect(0, 0, baseWidth, baseHeight);
+        const width = canvas.width;
+        const height = canvas.height;
+        const centerX = width / 2;
+        const horizonY = height * 0.52; // Lowered horizon line (moved down)
+        const baseYOffset = height * 0.35; // Increased offset to sit floor lower
 
-        // Draw electrical grid background (soft vertical lines)
-        ctx.strokeStyle = 'rgba(0, 255, 102, 0.015)';
-        ctx.lineWidth = 1;
-        const gridGap = 80;
-        for (let x = 0; x < baseWidth; x += gridGap) {
-          ctx.beginPath();
-          ctx.moveTo(x, 0);
-          ctx.lineTo(x, baseHeight);
-          ctx.stroke();
-        }
-        for (let y = 0; y < baseHeight; y += gridGap) {
-          ctx.beginPath();
-          ctx.moveTo(0, y);
-          ctx.lineTo(baseWidth, y);
-          ctx.stroke();
-        }
+        // Clear canvas with deep dark blue trailing effect
+        ctx.fillStyle = 'rgba(1, 6, 14, 0.22)';
+        ctx.fillRect(0, 0, width, height);
 
-        // Draw Waves (Energy flow)
-        waves.forEach(wave => {
-          ctx.beginPath();
-          ctx.moveTo(0, wave.y);
+        // -------------------------------------------------------------
+        // Draw 3D Perspective Grid Wave Floor
+        // -------------------------------------------------------------
+        
+        // Define grid coordinate points: 3D coordinates (x3d, y3d, z3d) mapped to 2D screen coordinates
+        const points = [];
+        const xRange = width * 2.8; // Extended width to stretch far horizontally
+        const xStep = xRange / (gridCols - 1);
 
-          for (let i = 0; i < baseWidth; i++) {
-            // Using sine/cosine equation to construct natural flow lines
-            const yOffset = Math.sin(i * wave.length + time * wave.speed) * 
-                            wave.amplitude * 
-                            Math.sin(time * 0.002); // dynamic amplitude modulation
-            ctx.lineTo(i, wave.y + yOffset);
+        for (let r = 0; r < gridRows; r++) {
+          const z3d = (gridRows - 1 - r) * depthGap + 80; // depth increases from bottom to top (horizon)
+          const rowPoints = [];
+
+          for (let c = 0; c < gridCols; c++) {
+            const x3d = -xRange / 2 + c * xStep;
+
+            // Generate waves on the 3D floor using math sine waves
+            // Combines horizontal wave and depth wave for an organic "water wave" grid movement
+            const waveX = Math.sin(x3d * 0.0025 + time * 0.025);
+            const waveZ = Math.cos(z3d * 0.0035 + time * 0.018);
+            const waveY = (waveX + waveZ) * 45; // Wave amplitude (height fluctuation)
+
+            // Perspective Projection conversion
+            const scale = focalLength / (focalLength + z3d);
+            const screenX = centerX + x3d * scale;
+            const screenY = horizonY + (baseYOffset + waveY) * scale;
+
+            rowPoints.push({
+              x: screenX,
+              y: screenY,
+              z: z3d,
+              scale: scale
+            });
           }
+          points.push(rowPoints);
+        }
 
-          ctx.strokeStyle = wave.color;
-          ctx.lineWidth = 3;
+        // Draw horizontal grid lines
+        for (let r = 0; r < gridRows; r++) {
+          ctx.beginPath();
+          for (let c = 0; c < gridCols; c++) {
+            const p = points[r][c];
+            if (c === 0) ctx.moveTo(p.x, p.y);
+            else ctx.lineTo(p.x, p.y);
+          }
+          
+          // Enhanced grid line visibility: alpha multiplier increased from 0.16 to 0.45
+          const sampleDepth = points[r][0].z;
+          const alpha = Math.pow(1 - sampleDepth / maxDepth, 2) * 0.45;
+          
+          ctx.strokeStyle = `rgba(0, 255, 102, ${alpha})`;
+          ctx.lineWidth = 1.8 * points[r][0].scale; // Linewidth increased from 1.2 to 1.8 for clearer look
           ctx.stroke();
-        });
+        }
 
-        // Update and draw Particles (Energy grid nodes)
+        // Draw vertical grid lines (connecting column points)
+        for (let c = 0; c < gridCols; c++) {
+          ctx.beginPath();
+          for (let r = 0; r < gridRows; r++) {
+            const p = points[r][c];
+            if (r === 0) ctx.moveTo(p.x, p.y);
+            else ctx.lineTo(p.x, p.y);
+          }
+          
+          // Enhanced vertical gradient alpha values for better visibility
+          const grad = ctx.createLinearGradient(0, height, 0, horizonY);
+          grad.addColorStop(0, 'rgba(0, 255, 102, 0.55)'); // Increased from 0.22
+          grad.addColorStop(0.5, 'rgba(0, 255, 102, 0.25)'); // Increased from 0.06
+          grad.addColorStop(1, 'rgba(0, 255, 102, 0.0)');
+          
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = 1.8 * points[0][c].scale; // Linewidth increased from 1.2 to 1.8
+          ctx.stroke();
+        }
+
+        // -------------------------------------------------------------
+        // Draw Floating Spark Particles (Electrical grid nodes)
+        // -------------------------------------------------------------
         particles.forEach(p => {
           p.y += p.speedY;
           p.x += p.speedX;
           p.pulseVal += p.pulseSpeed;
           
           // Re-wrap particles if they go off-screen
-          if (p.y < -10) p.y = baseHeight + 10;
-          if (p.x < -10 || p.x > baseWidth + 10) p.x = Math.random() * baseWidth;
+          if (p.y < -10) p.y = height + 10;
+          if (p.x < -10 || p.x > width + 10) p.x = Math.random() * width;
 
-          // Pulse opacity for twinkle effect
+          // Twinkle pulse effect
           const currentOpacity = p.opacity * (0.5 + 0.5 * Math.sin(p.pulseVal));
 
           ctx.beginPath();
@@ -516,7 +753,7 @@
           ctx.fillStyle = `rgba(0, 255, 102, ${currentOpacity})`;
           ctx.fill();
 
-          // Connect nearby particles with subtle lines
+          // Draw connections between close nodes
           particles.forEach(p2 => {
             const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
             if (dist < 180) {
