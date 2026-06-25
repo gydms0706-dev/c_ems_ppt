@@ -3,557 +3,538 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Competition-EMS | 가상 공간 표지</title>
-
-  <!-- 세련된 폰트 CDN -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
-
-  <!-- GSAP CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-
+  <title>Competition-EMS</title>
+  <!-- Pretendard (Korean) & Montserrat (English) Fonts -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700;900&display=swap" rel="stylesheet">
   <style>
-    *, *::before, *::after {
+    /* Reset & Base Settings */
+    * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
-
+    
     body, html {
-      background: #000206;
       width: 100%;
-      height: 100vh;
+      height: 100%;
       overflow: hidden;
-      font-family: 'Rajdhani', 'Noto Sans KR', sans-serif;
-      color: #fff;
+      background-color: #000000;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+      user-select: none;
     }
 
-    #slide {
-      width: 100%;
-      height: 100vh;
+    /* 16:9 Presentation Scaler */
+    .presentation-container {
       position: relative;
-      overflow: hidden;
-      background: #000206;
-    }
-
-    /* ══════════════════════════════
-       배경 레이어 : 깊은 우주 암흑
-    ══════════════════════════════ */
-    .bg-cosmos {
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 50% 50% at 50% 50%, #010a18 0%, transparent 80%),
-        linear-gradient(180deg, #000103 0%, #000309 50%, #000103 100%);
-      z-index: 1;
-    }
-
-    /* ══════════════════════════════
-       3D 스파링장 (Ring) 입체 격자망 공간
-    ══════════════════════════════ */
-    .ring-space {
-      position: absolute;
-      inset: 0;
-      z-index: 2;
-      perspective: 350px; /* 깊은 공간 왜곡 */
-      perspective-origin: 50% 45%;
-      overflow: hidden;
-    }
-
-    /* 링 바닥 그리드 */
-    .ring-floor {
-      position: absolute;
-      bottom: -20%;
-      left: -50%;
-      width: 200%;
-      height: 120%;
-      transform: rotateX(80deg);
-      transform-origin: bottom center;
-      background-image:
-        linear-gradient(to right, rgba(0, 232, 255, 0.12) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(0, 232, 255, 0.12) 1px, transparent 1px);
-      background-size: 80px 80px;
-      -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
-      mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
-    }
-
-    /* 스파링 링 좌측 로프(경계선) */
-    .ring-rope-left {
-      position: absolute;
-      left: -10%;
-      top: 0;
-      width: 60%;
-      height: 100%;
-      transform: rotateY(70deg) translate3d(0, 0, 0);
-      transform-origin: left center;
-      border-right: 2px solid rgba(0, 255, 180, 0.3);
-      box-shadow: 2px 0 10px rgba(0, 255, 180, 0.15);
-      background: linear-gradient(to right, transparent, rgba(0, 255, 180, 0.01) 90%, rgba(0, 255, 180, 0.05) 100%);
-      /* 세 줄 로프 느낌 */
-      background-image: 
-        repeating-linear-gradient(to bottom, transparent, transparent 120px, rgba(0, 255, 180, 0.2) 120px, rgba(0, 255, 180, 0.2) 123px);
-      opacity: 0.6;
-    }
-
-    /* 스파링 링 우측 로프(경계선) */
-    .ring-rope-right {
-      position: absolute;
-      right: -10%;
-      top: 0;
-      width: 60%;
-      height: 100%;
-      transform: rotateY(-70deg) translate3d(0, 0, 0);
-      transform-origin: right center;
-      border-left: 2px solid rgba(255, 0, 128, 0.3);
-      box-shadow: -2px 0 10px rgba(255, 0, 128, 0.15);
-      background: linear-gradient(to left, transparent, rgba(255, 0, 128, 0.01) 90%, rgba(255, 0, 128, 0.05) 100%);
-      background-image: 
-        repeating-linear-gradient(to bottom, transparent, transparent 120px, rgba(255, 0, 128, 0.2) 120px, rgba(255, 0, 128, 0.2) 123px);
-      opacity: 0.6;
-    }
-
-    /* 지평선 경계 */
-    .ring-horizon {
-      position: absolute;
-      top: 45%;
-      left: 0;
-      width: 100%;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(0, 232, 255, 0.3), transparent);
-      z-index: 3;
-    }
-
-    /* ══════════════════════════════
-       중앙 충돌 전력 그래프
-    ══════════════════════════════ */
-    .graph-container {
-      position: absolute;
-      top: 45%;
-      left: 0;
-      width: 100%;
-      height: 300px;
-      transform: translateY(-50%);
-      z-index: 4;
-      pointer-events: none;
-    }
-
-    .power-svg {
       width: 100%;
       height: 100%;
-    }
-
-    .power-line {
-      fill: none;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-    /* 좌측 파랑 팀 그래프 */
-    .line-left {
-      stroke: #00e8ff;
-      stroke-width: 3.5;
-      filter: drop-shadow(0 0 8px #00e8ff) drop-shadow(0 0 15px rgba(0, 232, 255, 0.4));
-    }
-
-    /* 우측 핑크 팀 그래프 */
-    .line-right {
-      stroke: #ff0080;
-      stroke-width: 3.5;
-      filter: drop-shadow(0 0 8px #ff0080) drop-shadow(0 0 15px rgba(255, 0, 128, 0.4));
-    }
-
-    /* 충돌 파동 스파크 링 */
-    .collision-flash {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%) scale(0);
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      background: radial-gradient(circle, #ffffff 10%, #00e8ff 40%, #ff0080 70%, transparent 100%);
-      filter: blur(4px);
-      opacity: 0;
-      z-index: 5;
-      pointer-events: none;
-    }
-
-    /* 충돌 불꽃 스파크 조각들 */
-    .spark {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 6px;
-      height: 6px;
-      background: #fff;
-      border-radius: 50%;
-      z-index: 6;
-      opacity: 0;
-      pointer-events: none;
-    }
-    .spark.blue { background: #00e8ff; box-shadow: 0 0 8px #00e8ff; }
-    .spark.pink { background: #ff0080; box-shadow: 0 0 8px #ff0080; }
-
-    /* ══════════════════════════════
-       메인 콘텐츠 레이어
-    ══════════════════════════════ */
-    .content {
-      position: absolute;
-      inset: 0;
-      z-index: 20;
       display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 50px 60px 60px;
-      pointer-events: none;
-    }
-
-    /* 상단 미니멀 정보 배치 */
-    .hud-top-minimal {
-      display: flex;
-      justify-content: space-between;
-      width: 100%;
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-
-    .top-left-label {
-      font-size: 1.15rem;
-      font-weight: 700;
-      color: rgba(255, 255, 255, 0.85);
-      letter-spacing: 0.05em;
-      border-left: 3px solid #00e8ff;
-      padding-left: 10px;
-    }
-
-    .top-right-label {
-      font-size: 1.15rem;
-      font-weight: 700;
-      color: rgba(255, 255, 255, 0.85);
-      letter-spacing: 0.05em;
-      border-right: 3px solid #ff0080;
-      padding-right: 10px;
-    }
-
-    /* 메인 타이틀 영역 */
-    .main-hero {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      text-align: center;
+      background-color: #000000;
     }
 
-    /* 타이틀 한 줄 배치 및 선명화 */
-    .title-main {
-      font-family: 'Orbitron', monospace;
-      font-size: 7.5vw;
-      font-weight: 900;
-      letter-spacing: 0.02em;
-      line-height: 1;
-      white-space: nowrap;
-      margin-bottom: 24px;
-      color: #fff;
-      text-shadow:
-        0 0 10px rgba(0, 232, 255, 0.8),
-        0 0 25px rgba(255, 0, 128, 0.5),
-        0 0 60px rgba(0, 232, 255, 0.2);
-      opacity: 0;
-      transform: scale(0.3) translateZ(-150px);
-      filter: blur(15px);
+    .slide {
+      position: absolute;
+      width: 1920px;
+      height: 1080px;
+      background-color: #000000;
+      color: #ffffff;
+      overflow: hidden;
+      transform-origin: center center;
+      transition: background 2s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
-    /* 두 보색 대비 타이틀 액센트 */
-    .title-accent-left {
-      color: #00e8ff;
-      text-shadow: 0 0 12px #00e8ff, 0 0 30px rgba(0, 232, 255, 0.4);
-    }
-    .title-accent-right {
-      color: #ff0080;
-      text-shadow: 0 0 12px #ff0080, 0 0 30px rgba(255, 0, 128, 0.4);
+    /* Active Background style when started */
+    .slide.started {
+      background: radial-gradient(circle at 50% 50%, #06191c 0%, #01060e 100%);
     }
 
-    /* 부제 */
-    .title-sub {
-      font-family: 'Noto Sans KR', sans-serif;
-      font-size: 2.3rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      color: rgba(220, 240, 255, 0.95);
-      text-shadow: 0 0 15px rgba(0, 232, 255, 0.3);
-      opacity: 0;
-      transform: translateY(15px);
-    }
-
-    .divider {
-      width: 200px;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, #00e8ff, #ff0080, transparent);
-      margin: 24px auto 0;
-      opacity: 0;
-      box-shadow: 0 0 6px #00e8ff;
-    }
-
-    /* 하단 미니멀 정보 배치 */
-    .hud-bottom-minimal {
+    /* Background Canvas */
+    #bg-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
-      text-align: center;
+      height: 100%;
+      z-index: 1;
       opacity: 0;
-      transform: translateY(10px);
+      transition: opacity 3s ease;
+    }
+    .slide.started #bg-canvas {
+      opacity: 1;
     }
 
-    .bottom-label {
-      font-family: 'Noto Sans KR', 'Rajdhani', sans-serif;
-      font-size: 1.35rem;
-      font-weight: 500;
-      letter-spacing: 0.08em;
-      color: #e2f4ff;
+    /* Start Overlay Hint */
+    .start-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #000000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+      transition: opacity 1.5s cubic-bezier(0.22, 1, 0.36, 1), visibility 1.5s;
+    }
+    
+    .slide.started .start-overlay {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .start-hint {
+      color: #ffffff;
+      font-size: 28px;
+      font-weight: 300;
+      letter-spacing: 0.2em;
+      opacity: 0.7;
+      animation: pulse 2s infinite ease-in-out;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; transform: scale(0.98); }
+      50% { opacity: 0.8; transform: scale(1.02); }
+    }
+
+    /* Content Layout */
+    .slide-content-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 80px 100px;
+    }
+
+    /* Header styling */
+    .slide-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      opacity: 0;
+      transform: translateY(-20px);
+      transition: opacity 1.5s cubic-bezier(0.22, 1, 0.36, 1), transform 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .slide.started .slide-header {
+      opacity: 0.9;
+      transform: translateY(0);
+      transition-delay: 0.4s;
+    }
+
+    .event-tag {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .event-tag::before {
+      content: '';
       display: inline-block;
-      padding: 10px 30px;
-      border: 1px solid rgba(0, 232, 255, 0.15);
-      background: rgba(0, 2, 6, 0.6);
-      border-radius: 4px;
+      width: 8px;
+      height: 8px;
+      background-color: #00ff66;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #00ff66;
     }
 
-    .bottom-label .neon-team {
-      color: #00e8ff;
+    .univ-tag {
+      font-size: 22px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      color: #cbd5e1;
+    }
+
+    /* Main Content styling */
+    .slide-main {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      margin-top: -40px; /* Optical center adjustment */
+    }
+
+    .title-container {
+      margin-bottom: 24px;
+      opacity: 0;
+      transform: scale(0.95) translateY(30px);
+      transition: opacity 2s cubic-bezier(0.22, 1, 0.36, 1), transform 2s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .slide.started .title-container {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      transition-delay: 1s;
+    }
+
+    .main-title {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 900;
+      font-size: 115px;
+      letter-spacing: 0.04em;
+      color: #ffffff;
+      line-height: 1.1;
+      text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Neon Green glow highlighting */
+    .neon-green {
+      color: #00ff66;
+      text-shadow: 
+        0 0 8px rgba(0, 255, 102, 0.8),
+        0 0 20px rgba(0, 255, 102, 0.4),
+        0 0 45px rgba(0, 255, 102, 0.2);
+      animation: neonFlicker 4s infinite alternate;
+    }
+
+    @keyframes neonFlicker {
+      0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+        text-shadow: 
+          0 0 8px rgba(0, 255, 102, 0.8),
+          0 0 20px rgba(0, 255, 102, 0.4),
+          0 0 45px rgba(0, 255, 102, 0.2);
+      }
+      20%, 24%, 55% {
+        text-shadow: none;
+        color: rgba(0, 255, 102, 0.6);
+      }
+    }
+
+    .subtitle-container {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 1.8s cubic-bezier(0.22, 1, 0.36, 1), transform 1.8s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .slide.started .subtitle-container {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: 2.2s;
+    }
+
+    .sub-title {
+      font-size: 34px;
+      font-weight: 300;
+      color: #e2e8f0;
+      letter-spacing: 0.05em;
+      line-height: 1.5;
+    }
+    
+    .sub-title strong {
       font-weight: 700;
-      text-shadow: 0 0 8px #00e8ff;
-      margin-right: 12px;
+      color: #ffffff;
     }
 
-    /* ── 네온 Pulse 호흡 애니메이션 ── */
-    @keyframes neonPulse {
-      0%, 100% {
-        text-shadow:
-          0 0 10px rgba(0, 232, 255, 0.8),
-          0 0 25px rgba(255, 0, 128, 0.5),
-          0 0 60px rgba(0, 232, 255, 0.2);
-      }
-      50% {
-        text-shadow:
-          0 0 6px rgba(0, 232, 255, 0.5),
-          0 0 15px rgba(255, 0, 128, 0.3),
-          0 0 40px rgba(0, 232, 255, 0.15);
-      }
+    /* Footer styling */
+    .slide-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      width: 100%;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 1.5s cubic-bezier(0.22, 1, 0.36, 1), transform 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .slide.started .slide-footer {
+      opacity: 0.85;
+      transform: translateY(0);
+      transition-delay: 3.2s;
     }
 
-    .title-main.glowing {
-      animation: neonPulse 3s ease-in-out infinite;
+    .team-info {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .team-label {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: #64748b;
+    }
+
+    .team-name {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: #ffffff;
+    }
+
+    .members-info {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+    }
+
+    .members-label {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: #64748b;
+    }
+
+    .member-names {
+      font-size: 24px;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      color: #e2e8f0;
     }
   </style>
 </head>
 <body>
 
-<div id="slide">
+  <div class="presentation-container">
+    <div class="slide" id="slide1">
+      
+      <!-- Ambient Energy Network Canvas -->
+      <canvas id="bg-canvas"></canvas>
 
-  <!-- ── 딥 블랙 네이비 배경 ── -->
-  <div class="bg-cosmos"></div>
-
-  <!-- 3D 스파링장 가상 격자 링 공간 -->
-  <div class="ring-space">
-    <div class="ring-floor"></div>
-    <div class="ring-rope-left"></div>
-    <div class="ring-rope-right"></div>
-    <div class="ring-horizon"></div>
-  </div>
-
-  <!-- 양방향 충돌 그래프 콘테이너 -->
-  <div class="graph-container">
-    <!-- 충돌 섬광 오버레이 -->
-    <div class="collision-flash" id="flash"></div>
-
-    <!-- 스파크 입자들 -->
-    <div class="spark blue" id="sp-b1"></div>
-    <div class="spark blue" id="sp-b2"></div>
-    <div class="spark blue" id="sp-b3"></div>
-    <div class="spark pink" id="sp-p1"></div>
-    <div class="spark pink" id="sp-p2"></div>
-    <div class="spark pink" id="sp-p3"></div>
-
-    <svg class="power-svg" viewBox="0 0 1920 300" preserveAspectRatio="none">
-      <!-- 좌측에서 출발하는 파란색 그래프 (0 -> 960) -->
-      <path class="power-line line-left" id="path-left"
-        d="M 0,150 
-           L 200,150 
-           Q 240,150 260,90 
-           T 280,210 
-           T 300,150 
-           L 500,150 
-           Q 530,150 550,50 
-           T 570,250 
-           T 590,150 
-           L 750,150 
-           Q 780,150 800,80 
-           T 820,220 
-           T 840,150 
-           L 960,150" />
-
-      <!-- 우측에서 출발하는 핑크색 그래프 (1920 -> 960) -->
-      <path class="power-line line-right" id="path-right"
-        d="M 1920,150 
-           L 1720,150 
-           Q 1680,150 1660,90 
-           T 1640,210 
-           T 1620,150 
-           L 1420,150 
-           Q 1390,150 1370,50 
-           T 1350,250 
-           T 1330,150 
-           L 1170,150 
-           Q 1140,150 1120,80 
-           T 1100,220 
-           T 1080,150 
-           L 960,150" />
-    </svg>
-  </div>
-
-  <!-- ── 텍스트 콘텐츠 레이어 ── -->
-  <div class="content">
-
-    <!-- 상단 좌우 배치 -->
-    <div class="hud-top-minimal" id="hud-top">
-      <div class="top-left-label">2026 HUSS AI 경진대회</div>
-      <div class="top-right-label">영남대학교</div>
-    </div>
-
-    <!-- 중앙 타이틀 -->
-    <div class="main-hero">
-      <h1 class="title-main" id="title-main">
-        <span class="title-accent-left">C</span>ompetition<span style="color:rgba(255,255,255,0.35)">-</span><span class="title-accent-right">EMS</span>
-      </h1>
-      <h2 class="title-sub" id="title-sub">참여형 경쟁 기반 에너지 관리 시스템</h2>
-      <div class="divider" id="divider"></div>
-    </div>
-
-    <!-- 하단 중앙 배치 -->
-    <div class="hud-bottom-minimal" id="hud-bottom">
-      <div class="bottom-label">
-        <span class="neon-team">Aice</span> 전승환 · 문효은 · 이승은 · 조명원
+      <!-- Start Overlay -->
+      <div class="start-overlay" id="overlay">
+        <div class="start-hint">Press [ SPACE ] to start</div>
       </div>
+
+      <!-- Main Contents -->
+      <div class="slide-content-wrapper">
+        <!-- Top Header -->
+        <header class="slide-header">
+          <div class="event-tag">2026 HUSS AI 경진대회</div>
+          <div class="univ-tag">영남대학교</div>
+        </header>
+
+        <!-- Center Titles -->
+        <main class="slide-main">
+          <div class="title-container">
+            <h1 class="main-title">
+              <span class="neon-green">C</span>ompetition-<span class="neon-green">EMS</span>
+            </h1>
+          </div>
+          <div class="subtitle-container">
+            <p class="sub-title">숨은 전력을 찾다 : <strong>참여형 경쟁 기반 에너지 관리 시스템</strong></p>
+          </div>
+        </main>
+
+        <!-- Bottom Footer -->
+        <footer class="slide-footer">
+          <div class="team-info">
+            <span class="team-label">Presented by</span>
+            <span class="team-name">Team Aice</span>
+          </div>
+          <div class="members-info">
+            <span class="members-label">Team Members</span>
+            <span class="member-names">전승환 · 문효은 · 이승은 · 조명원</span>
+          </div>
+        </footer>
+      </div>
+
     </div>
-
   </div>
-</div>
 
-<script>
-  // ═══════════════════════════════════════════════════════════
-  // GSAP 경쟁 연출 시퀀스 (그래프 충돌 ➔ 충격파 ➔ 타이틀 등장)
-  // ═══════════════════════════════════════════════════════════
-  const tl = gsap.timeline();
+  <script>
+    // -------------------------------------------------------------
+    // 1. 16:9 Aspect Ratio Auto-Scaler
+    // -------------------------------------------------------------
+    const slide = document.getElementById('slide1');
+    const baseWidth = 1920;
+    const baseHeight = 1080;
 
-  // 초기 상태 셋업
-  gsap.set('.power-line', { strokeDasharray: 2000, strokeDashoffset: 2000 });
-  gsap.set('#title-main', { opacity: 0, scale: 0.3 });
-  gsap.set('#title-sub', { opacity: 0, y: 15 });
-  gsap.set('#divider', { opacity: 0 });
-  gsap.set(['#hud-top', '#hud-bottom'], { opacity: 0 });
+    function scaleSlide() {
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
 
-  // ── 1단계: 좌/우 전력 파형 그래프가 양쪽에서 중앙으로 그려짐 (0s ~ 1.5s) ──
-  tl.to('#path-left', {
-    strokeDashoffset: 0,
-    duration: 1.5,
-    ease: 'power2.out'
-  }, 0.0);
+      // Calculate scale factors
+      const scaleX = windowWidth / baseWidth;
+      const scaleY = windowHeight / baseHeight;
+      
+      // Use the minimum scale factor to ensure the element fits within the viewport bounds
+      const scale = Math.min(scaleX, scaleY);
 
-  tl.to('#path-right', {
-    strokeDashoffset: 0,
-    duration: 1.5,
-    ease: 'power2.out'
-  }, 0.0);
+      // Apply transformation (center-aligned scale)
+      slide.style.transform = `scale(${scale})`;
+    }
 
-  // ── 2단계: 중앙 격돌 순간 (1.5s) 스파크 및 충격파 섬광 폭발 ──
-  tl.add(() => {
-    // 중앙 플래시 커짐
-    gsap.to('#flash', {
-      scale: 3.5,
-      opacity: 0.9,
-      duration: 0.15,
-      ease: 'power1.out',
-      onComplete: () => {
-        gsap.to('#flash', { scale: 6, opacity: 0, duration: 0.35, ease: 'power2.out' });
+    // Initialize and bind resizing events
+    window.addEventListener('resize', scaleSlide);
+    window.addEventListener('DOMContentLoaded', scaleSlide);
+
+    // -------------------------------------------------------------
+    // 2. Spacebar Start Interaction
+    // -------------------------------------------------------------
+    let isStarted = false;
+
+    window.addEventListener('keydown', (e) => {
+      // Trigger if Spacebar is pressed and not yet started
+      if ((e.code === 'Space' || e.key === ' ') && !isStarted) {
+        e.preventDefault(); // Prevent default scroll behavior of Spacebar
+        startPresentation();
       }
     });
 
-    // 뿜어져 나가는 스파크 파티클 연출
-    const sparks = [
-      { id: '#sp-b1', x: -120, y: -70 },
-      { id: '#sp-b2', x: -90, y: 90 },
-      { id: '#sp-b3', x: -160, y: 20 },
-      { id: '#sp-p1', x: 120, y: -80 },
-      { id: '#sp-p2', x: 90, y: 80 },
-      { id: '#sp-p3', x: 170, y: -10 }
-    ];
-
-    sparks.forEach(sp => {
-      gsap.set(sp.id, { x: 0, y: 0, opacity: 1, scale: 1 });
-      gsap.to(sp.id, {
-        x: sp.x,
-        y: sp.y,
-        scale: 0.2,
-        opacity: 0,
-        duration: 0.6,
-        ease: 'power2.out'
-      });
-    });
-  }, 1.45); // 충돌 0.05초 전 싱크 맞춤
-
-  // ── 3단계: 충돌 직후 타이틀 등장 (1.5s ~ 2.7s) ──
-  tl.to('#title-main', {
-    opacity: 1,
-    scale: 1,
-    filter: 'blur(0px)',
-    duration: 0.9,
-    ease: 'back.out(1.2)'
-  }, 1.6);
-
-  // 글씨 네온 Flicker 부팅
-  tl.add(() => {
-    const el = document.getElementById('title-main');
-    gsap.to(el, {
-      opacity: 0.2,
-      duration: 0.05,
-      yoyo: true,
-      repeat: 5,
-      ease: 'none',
-      onComplete: () => {
-        el.classList.add('glowing');
-        gsap.set(el, { opacity: 1 });
+    // Also support clicking anywhere to start for easier presenter control (e.g. presenter remote)
+    const overlay = document.getElementById('overlay');
+    overlay.addEventListener('click', () => {
+      if (!isStarted) {
+        startPresentation();
       }
     });
-  }, 2.4);
 
-  // 부제 및 구분선 등장
-  tl.to('#title-sub', {
-    opacity: 1,
-    y: 0,
-    duration: 0.7,
-    ease: 'power2.out'
-  }, 2.1);
+    function startPresentation() {
+      isStarted = true;
+      slide.classList.add('started');
+      
+      // Start Canvas Energy Wave animation
+      initCanvasAnimation();
+    }
 
-  tl.to('#divider', {
-    opacity: 1,
-    duration: 0.4,
-    ease: 'power2.out'
-  }, 2.4);
+    // -------------------------------------------------------------
+    // 3. Canvas Background: Ambient Energy Flow
+    // -------------------------------------------------------------
+    function initCanvasAnimation() {
+      const canvas = document.getElementById('bg-canvas');
+      const ctx = canvas.getContext('2d');
 
-  // 상단 텍스트 및 하단 발표자 텍스트 순차 페이드인
-  tl.to('#hud-top', {
-    opacity: 1,
-    y: 0,
-    duration: 0.6,
-    ease: 'power2.out'
-  }, 2.6);
+      // Match canvas resolution to original slide coordinates
+      canvas.width = baseWidth;
+      canvas.height = baseHeight;
 
-  tl.to('#hud-bottom', {
-    opacity: 1,
-    y: 0,
-    duration: 0.6,
-    ease: 'power2.out'
-  }, 2.8);
-</script>
+      // Energy wave lines configuration
+      const waves = [
+        {
+          y: baseHeight * 0.65,
+          length: 0.0012,
+          amplitude: 45,
+          frequency: 0.015,
+          color: 'rgba(0, 255, 102, 0.08)',
+          speed: 0.01
+        },
+        {
+          y: baseHeight * 0.7,
+          length: 0.0008,
+          amplitude: 65,
+          frequency: 0.01,
+          color: 'rgba(0, 150, 255, 0.06)',
+          speed: -0.007
+        },
+        {
+          y: baseHeight * 0.58,
+          length: 0.0015,
+          amplitude: 30,
+          frequency: 0.02,
+          color: 'rgba(0, 255, 102, 0.04)',
+          speed: 0.015
+        }
+      ];
 
+      // Spark particles in background simulating electric grids
+      const particles = [];
+      for (let i = 0; i < 25; i++) {
+        particles.push({
+          x: Math.random() * baseWidth,
+          y: Math.random() * baseHeight,
+          size: Math.random() * 2 + 1,
+          opacity: Math.random() * 0.5 + 0.1,
+          speedY: -(Math.random() * 0.4 + 0.1),
+          speedX: (Math.random() * 0.4 - 0.2),
+          pulseSpeed: 0.01 + Math.random() * 0.02,
+          pulseVal: Math.random() * Math.PI
+        });
+      }
+
+      let time = 0;
+
+      function animate() {
+        if (!isStarted) return;
+        requestAnimationFrame(animate);
+
+        // Clear with slight trailing effect
+        ctx.fillStyle = 'rgba(1, 6, 14, 0.2)';
+        ctx.fillRect(0, 0, baseWidth, baseHeight);
+
+        // Draw electrical grid background (soft vertical lines)
+        ctx.strokeStyle = 'rgba(0, 255, 102, 0.015)';
+        ctx.lineWidth = 1;
+        const gridGap = 80;
+        for (let x = 0; x < baseWidth; x += gridGap) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, baseHeight);
+          ctx.stroke();
+        }
+        for (let y = 0; y < baseHeight; y += gridGap) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(baseWidth, y);
+          ctx.stroke();
+        }
+
+        // Draw Waves (Energy flow)
+        waves.forEach(wave => {
+          ctx.beginPath();
+          ctx.moveTo(0, wave.y);
+
+          for (let i = 0; i < baseWidth; i++) {
+            // Using sine/cosine equation to construct natural flow lines
+            const yOffset = Math.sin(i * wave.length + time * wave.speed) * 
+                            wave.amplitude * 
+                            Math.sin(time * 0.002); // dynamic amplitude modulation
+            ctx.lineTo(i, wave.y + yOffset);
+          }
+
+          ctx.strokeStyle = wave.color;
+          ctx.lineWidth = 3;
+          ctx.stroke();
+        });
+
+        // Update and draw Particles (Energy grid nodes)
+        particles.forEach(p => {
+          p.y += p.speedY;
+          p.x += p.speedX;
+          p.pulseVal += p.pulseSpeed;
+          
+          // Re-wrap particles if they go off-screen
+          if (p.y < -10) p.y = baseHeight + 10;
+          if (p.x < -10 || p.x > baseWidth + 10) p.x = Math.random() * baseWidth;
+
+          // Pulse opacity for twinkle effect
+          const currentOpacity = p.opacity * (0.5 + 0.5 * Math.sin(p.pulseVal));
+
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(0, 255, 102, ${currentOpacity})`;
+          ctx.fill();
+
+          // Connect nearby particles with subtle lines
+          particles.forEach(p2 => {
+            const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+            if (dist < 180) {
+              const alpha = (1 - dist / 180) * 0.05 * currentOpacity;
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.strokeStyle = `rgba(0, 255, 102, ${alpha})`;
+              ctx.stroke();
+            }
+          });
+        });
+
+        time += 1;
+      }
+
+      animate();
+    }
+  </script>
 </body>
 </html>
