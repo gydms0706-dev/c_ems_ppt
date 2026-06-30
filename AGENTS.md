@@ -16,6 +16,11 @@ Treat that brief as the source of truth for the competition's purpose, eligibili
 - As the content is revised, organize the spoken presentation material in `presentation_script`.
 - Keep `presentation_script` aligned with the evolving deck flow so it can support the 5-minute team presentation.
 
+## Collaboration Before Edits
+
+- Before modifying presentation content, scripts, prompts, or deck-related files, first discuss the proposed change with the user.
+- Apply edits only after the user and agent have decided the change together, unless the user explicitly asks for an immediate direct edit.
+
 ## Presentation Priorities
 
 When creating or revising deck content, emphasize:
