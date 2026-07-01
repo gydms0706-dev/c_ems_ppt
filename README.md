@@ -5,6 +5,10 @@ HUSS 융합캠프 AI 경진대회
 
 # C-EMS 발표자료 제작 
 
+이 리포지토리는 2026 HUSS Social AI Lab 경진대회 발표 자료 준비를 위한 공간입니다. 
+대회 요약 정보 및 브리프는 아래 문서를 참고하세요:
+- [docs/competition-brief.md](file:///c:/Users/Administrator/Desktop/c_ems_ppt/docs/competition-brief.md)
+
 ## 1. 프로젝트 핵심 방향
 - 학교 에너지 절감 문제를 공공문제로 정의한다.
 - 기존 시설관리자 중심 EMS의 한계를 지적한다.
@@ -116,5 +120,4 @@ Antigravity는 작업 중 생성되는 파일을 역할에 맞는 폴더에 자�
 - 테스트 파일은 작업이 끝나면 삭제하거나 temp 폴더에 정리한다.
 - 사용자가 요청하지 않은 대규모 구조 변경은 하지 않는다.
 - 발표자료의 흐름, 디자인 톤, 핵심 메시지는 README 기준을 따른다.
-
 
